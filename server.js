@@ -15,6 +15,14 @@ io.on('connection', (socket) => {
   socket.on('VIDEO:SET', (data) => {
     io.emit('VIDEO:SET', data);
   });
+
+  socket.on('VIDEO:PLAY', (data) => {
+    io.emit('VIDEO:PLAY', data);
+  });
+
+  socket.on('VIDEO:PAUSE', (data) => {
+    io.emit('VIDEO:PAUSE', data);
+  });
 });
 
 app.use(express.static(path.resolve(__dirname, 'public')));

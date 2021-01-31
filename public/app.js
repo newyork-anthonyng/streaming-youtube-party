@@ -36,6 +36,7 @@ const socket = io();
 
 const $input = document.querySelector('.js-input');
 const $submit = document.querySelector('.js-button');
+const $play = document.querySelector('.js-play-button');
 
 $submit.addEventListener('click', function() {
   const url = $input.value;
@@ -56,4 +57,26 @@ function getVideoIdFromUrl(url) {
 
 socket.on('VIDEO:SET', (data) => {
   player.cueVideoById(data.videoId);
+});
+
+let isPlaying = false;
+$play.addEventListener('click', function() {
+  if (isPlaying) {
+    socket.emit('VIDEO:PAUSE');
+  } else {
+    socket.emit('VIDEO:PLAY');
+  }
+});
+
+
+socket.on('VIDEO:PLAY', (data) => {
+  player.playVideo();
+  isPlaying = true;
+  $play.innerText = 'Pause';
+});
+
+socket.on('VIDEO:PAUSE', (data) => {
+  player.pauseVideo();
+  isPlaying = false;
+  $play.innerText = 'Play';
 });
