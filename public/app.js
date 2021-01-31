@@ -24,8 +24,20 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
+const queue = [];
+window.init = (data) => {
+  queue.push({ type: 'VIDEO:INIT', data });
+};
+
 function onPlayerReady(event) {
-  // event.target.playVideo();
+  while (queue.length > 0) {
+    const action = queue.shift(queue);
+    player.cueVideoById(action.data.videoId);
+  }
+
+  window.init = (data) => {
+    player.cueVideoById(data.videoId);
+  };
 }
 
 function onPlayerStateChange(event) {
@@ -68,7 +80,6 @@ $play.addEventListener('click', function() {
   }
 });
 
-
 socket.on('VIDEO:PLAY', (data) => {
   player.playVideo();
   isPlaying = true;
@@ -79,4 +90,10 @@ socket.on('VIDEO:PAUSE', (data) => {
   player.pauseVideo();
   isPlaying = false;
   $play.innerText = 'Play';
+});
+
+socket.on('VIDEO:INIT', (data) => {
+  if (data.videoId) {
+    init(data);
+  }
 });

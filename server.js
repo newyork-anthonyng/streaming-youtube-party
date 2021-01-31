@@ -5,8 +5,17 @@ const http = require('http').createServer(app);
 
 const io = require('socket.io')(http);
 
+const applesauce = {
+  videoId: undefined,
+  setVideo: function(data) {
+    this.videoId = data.videoId;
+  }
+}
+
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  socket.emit('VIDEO:INIT', {
+    videoId: applesauce.videoId
+  });
 
   socket.on('disconnect', () => {
     console.log('user disconnected');
@@ -14,6 +23,9 @@ io.on('connection', (socket) => {
 
   socket.on('VIDEO:SET', (data) => {
     io.emit('VIDEO:SET', data);
+
+    applesauce.setVideo(data);
+    console.log(applesauce.videoId);
   });
 
   socket.on('VIDEO:PLAY', (data) => {
