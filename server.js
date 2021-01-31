@@ -12,12 +12,8 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 
-  socket.on('TEST_CHANNEL', (data) => {
-
-    io.emit('TEST_CHANNEL_2', data);
-    console.log('***********');
-    console.log(data);
-    console.log('***********');
+  socket.on('VIDEO:SET', (data) => {
+    io.emit('VIDEO:SET', data);
   });
 });
 

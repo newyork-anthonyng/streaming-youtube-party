@@ -1,23 +1,59 @@
-console.log('app.js loaded!');
+function loadYoutubeApi() {
+  const tag = document.createElement('script');
+
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+loadYoutubeApi();
+
+let player;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    height: '390',
+    width: '640',
+    // videoId: 'M7lc1UVf-VE',
+    events: {
+      'onReady': onPlayerReady,
+      'onStateChange': onPlayerStateChange
+    },
+    playerVars: {
+      mute: 1
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  // event.target.playVideo();
+}
+
+function onPlayerStateChange(event) {
+  console.log(event);
+}
 
 const socket = io();
 
 const $input = document.querySelector('.js-input');
 const $submit = document.querySelector('.js-button');
-const $msgContainer = document.querySelector('.js-msg');
 
 $submit.addEventListener('click', function() {
-  const text = $input.value;
+  const url = $input.value;
+  const videoId = getVideoIdFromUrl(url);
 
-  socket.emit('TEST_CHANNEL', {
-    id: Date.now(),
-    text: text
+  socket.emit('VIDEO:SET', {
+    videoId
   });
 });
 
-socket.on('TEST_CHANNEL_2', (data) => {
-  const $newMsg = document.createElement('div');
-  $newMsg.innerHTML = JSON.stringify(data, null, 2);
+function getVideoIdFromUrl(url) {
+  const queryString = url.split('?')[1];
+  const searchParams = new URLSearchParams(queryString);
 
-  $msgContainer.appendChild($newMsg);
+  const VERSION_FIELD = 'v';
+  return searchParams.get(VERSION_FIELD);
+}
+
+socket.on('VIDEO:SET', (data) => {
+  player.cueVideoById(data.videoId);
 });
