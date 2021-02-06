@@ -7,8 +7,14 @@ const io = require('socket.io')(http);
 
 const applesauce = {
   videoId: undefined,
+  totalDuration: 0,
+  currentTime: 0,
   setVideo: function(data) {
     this.videoId = data.videoId;
+  },
+  scrubVideo: function(data) {
+    this.currentTime = data.currentTime;
+    this.totalDuration = data.totalDuration;
   }
 }
 
@@ -22,10 +28,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('VIDEO:SET', (data) => {
-    io.emit('VIDEO:SET', data);
-
     applesauce.setVideo(data);
-    console.log(applesauce.videoId);
+
+    io.emit('VIDEO:SET', data);
   });
 
   socket.on('VIDEO:PLAY', (data) => {
@@ -34,6 +39,12 @@ io.on('connection', (socket) => {
 
   socket.on('VIDEO:PAUSE', (data) => {
     io.emit('VIDEO:PAUSE', data);
+  });
+
+  socket.on('VIDEO:SCRUB', (data) => {
+    applesauce.scrubVideo(data);
+
+    io.emit('VIDEO:SCRUB', data);
   });
 });
 

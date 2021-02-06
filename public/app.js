@@ -1,7 +1,4 @@
 /*
- * 1. when the Youtube player is playing, update the scrubber
- *      player.getCurrentTime() // duration in seconds
- *      player.getDuration() // duration in seconds
  * 2. when user updates the scrubber, we should update the youtube player
  *    player.seekTo
 */
@@ -68,6 +65,22 @@ $submit.addEventListener('click', function() {
   });
 });
 
+$scrubber.addEventListener('change', function(e) {
+  socket.emit('VIDEO:SCRUB', {
+    currentTime: $scrubber.value,
+    totalDuration: $scrubber.max // TODO: don't need to send this everytime
+  });
+});
+
+let isScrubbing = false;
+$scrubber.addEventListener('mousedown', function() {
+  isScrubbing = true;
+});
+
+$scrubber.addEventListener('mouseup', function() {
+  isScrubbing = false;
+});
+
 function getVideoIdFromUrl(url) {
   const queryString = url.split('?')[1];
   const searchParams = new URLSearchParams(queryString);
@@ -93,12 +106,11 @@ let scrubberTimer;
 function formatTime(duration)
 {
     // Hours, minutes and seconds
-    var hrs = ~~(duration / 3600);
-    var mins = ~~((duration % 3600) / 60);
-    var secs = ~~duration % 60;
+    const hrs = ~~(duration / 3600);
+    const mins = ~~((duration % 3600) / 60);
+    const secs = ~~duration % 60;
 
-    // Output like "1:01" or "4:03:59" or "123:03:59"
-    var ret = "";
+    let ret = "";
 
     if (hrs > 0) {
         ret += "" + hrs + ":" + (mins < 10 ? "0" : "");
@@ -106,6 +118,7 @@ function formatTime(duration)
 
     ret += "" + mins + ":" + (secs < 10 ? "0" : "");
     ret += "" + secs;
+
     return ret;
 }
 
@@ -117,10 +130,11 @@ socket.on('VIDEO:PLAY', (data) => {
   scrubberTimer = setInterval(() => {
     const currentTime = player.getCurrentTime();
     const totalDuration = player.getDuration();
-    $scrubberInfo.innerText = `${formatTime(currentTime)} / ${formatTime(totalDuration)}`;
 
-    const percentage =  currentTime/totalDuration ;
-    $scrubber.value =  percentage * 100;
+    if (!isScrubbing) {
+      $scrubber.value =  currentTime;
+      $scrubber.max = totalDuration; // TODO: do this once in INIT
+    }
   }, 1000);
 });
 
@@ -136,4 +150,8 @@ socket.on('VIDEO:INIT', (data) => {
   if (data.videoId) {
     init(data);
   }
+});
+
+socket.on('VIDEO:SCRUB', (data) => {
+  player.seekTo(data.currentTime);
 });
