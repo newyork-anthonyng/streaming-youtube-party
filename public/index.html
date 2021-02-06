@@ -7,12 +7,17 @@
   <body>
     <h1>Testing</h1>
 
-    <input class="js-input" />
+    <input class="js-input" value="https://www.youtube.com/watch?v=QehrR-1h-F8&feature=emb_title" />
     <button class="js-button">Submit</button>
 
     <div id="player"></div>
 
     <button class="js-play-button">Play</button>
+    <div>
+      <input type="range" class="js-scrubber" />
+      <p class="js-scrubber-time"></p>
+    </div>
+
 
     <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
     <script src="app.js"></script>
