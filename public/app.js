@@ -54,6 +54,7 @@ const $submit = document.querySelector('.js-button');
 const $play = document.querySelector('.js-play-button');
 const $scrubber = document.querySelector('.js-scrubber');
 const $scrubberInfo = document.querySelector('.js-scrubber-time');
+const $actions = document.querySelector('.js-action-feed');
 
 $submit.addEventListener('click', function() {
   const url = $input.value;
@@ -90,6 +91,8 @@ function getVideoIdFromUrl(url) {
 
 socket.on('VIDEO:SET', (data) => {
   player.cueVideoById(data.videoId);
+
+  updateFeed('set');
 });
 
 let isPlaying = false;
@@ -134,11 +137,17 @@ function playVideo() {
     const currentTime = player.getCurrentTime();
     const totalDuration = player.getDuration();
 
-    if (!isScrubbing) {
-      $scrubber.value =  currentTime;
-      $scrubber.max = totalDuration; // TODO: do this once in INIT
-    }
+    updateScrubber({ currentTime, totalDuration });
   }, 1000);
+
+  updateFeed('play');
+}
+
+function updateScrubber({ currentTime, totalDuration }) {
+  if (!isScrubbing) {
+    $scrubber.value =  currentTime;
+    $scrubber.max = totalDuration; // TODO: do this once in INIT
+  }
 }
 
 socket.on('VIDEO:PAUSE', (data) => {
@@ -147,6 +156,8 @@ socket.on('VIDEO:PAUSE', (data) => {
   $play.innerText = 'Play';
 
   clearInterval(scrubberTimer);
+
+  updateFeed('pause');
 });
 
 socket.on('VIDEO:INIT', (data) => {
@@ -162,4 +173,33 @@ socket.on('VIDEO:SCRUB', (data) => {
   $play.innerText = 'Play';
 
   clearInterval(scrubberTimer);
+
+  updateFeed('scrub');
+  updateScrubber({
+    currentTime: data.currentTime,
+    totalDuration: data.totalDuration
+  });
 });
+
+function updateFeed(actionType) {
+  let message;
+
+  switch(actionType) {
+    case 'set':
+      message = 'User added new video';
+      break;
+    case 'play':
+      message = 'User played video';
+      break;
+    case 'pause':
+      message = 'User paused video';
+      break;
+    case 'scrub':
+      message = 'User went to new time in video';
+      break;
+  }
+
+  const $msgElement = document.createElement('div');
+  $msgElement.innerText = message;
+  $actions.prepend($msgElement);
+}
