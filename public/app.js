@@ -1,7 +1,3 @@
-/*
- * 2. when user updates the scrubber, we should update the youtube player
- *    player.seekTo
-*/
 function loadYoutubeApi() {
   const tag = document.createElement('script');
 
@@ -20,7 +16,6 @@ function onYouTubeIframeAPIReady() {
     // videoId: 'M7lc1UVf-VE',
     events: {
       'onReady': onPlayerReady,
-      'onStateChange': onPlayerStateChange
     },
     playerVars: {
       mute: 1
@@ -36,16 +31,20 @@ window.init = (data) => {
 function onPlayerReady(event) {
   while (queue.length > 0) {
     const action = queue.shift(queue);
-    player.cueVideoById(action.data.videoId);
+    __init(action.data);
   }
 
   window.init = (data) => {
-    player.cueVideoById(data.videoId);
+    __init(data);
   };
 }
 
-function onPlayerStateChange(event) {
-  console.log(event);
+function __init(data) {
+  player.cueVideoById(data.videoId, data.currentTime);
+
+  if (data.status === 'playing') {
+    playVideo();
+  }
 }
 
 const socket = io();
@@ -67,8 +66,8 @@ $submit.addEventListener('click', function() {
 
 $scrubber.addEventListener('change', function(e) {
   socket.emit('VIDEO:SCRUB', {
-    currentTime: $scrubber.value,
-    totalDuration: $scrubber.max // TODO: don't need to send this everytime
+    currentTime: parseInt($scrubber.value, 10),
+    totalDuration: parseInt($scrubber.max, 10) // TODO: don't need to send this everytime
   });
 });
 
@@ -96,9 +95,9 @@ socket.on('VIDEO:SET', (data) => {
 let isPlaying = false;
 $play.addEventListener('click', function() {
   if (isPlaying) {
-    socket.emit('VIDEO:PAUSE');
+    socket.emit('VIDEO:PAUSE', { currentTime: player.getCurrentTime() });
   } else {
-    socket.emit('VIDEO:PLAY');
+    socket.emit('VIDEO:PLAY',  { currentTime: player.getCurrentTime() });
   }
 });
 
@@ -123,6 +122,10 @@ function formatTime(duration)
 }
 
 socket.on('VIDEO:PLAY', (data) => {
+  playVideo();
+});
+
+function playVideo() {
   player.playVideo();
   isPlaying = true;
   $play.innerText = 'Pause';
@@ -136,7 +139,7 @@ socket.on('VIDEO:PLAY', (data) => {
       $scrubber.max = totalDuration; // TODO: do this once in INIT
     }
   }, 1000);
-});
+}
 
 socket.on('VIDEO:PAUSE', (data) => {
   player.pauseVideo();
@@ -154,4 +157,9 @@ socket.on('VIDEO:INIT', (data) => {
 
 socket.on('VIDEO:SCRUB', (data) => {
   player.seekTo(data.currentTime);
+  player.pauseVideo();
+  isPlaying = false;
+  $play.innerText = 'Play';
+
+  clearInterval(scrubberTimer);
 });
