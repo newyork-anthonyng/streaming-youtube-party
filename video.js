@@ -10,8 +10,7 @@ class Video {
     this.status = status.PAUSED;
   }
 
-
-  setVideo(data) {
+  cueNewVideo(data) {
     this.videoId = data.videoId;
     this.status = status.PAUSED;
   }
@@ -30,8 +29,6 @@ class Video {
 
     this.intervalId = setInterval(() => {
       this.currentTime = this.currentTime + 1;
-
-      console.log(this.getInitData());
     }, 1000);
   }
 
@@ -42,7 +39,7 @@ class Video {
     clearInterval(this.intervalId);
   }
 
-  getInitData() {
+  getData() {
     return {
       videoId: this.videoId,
       status: this.status,

@@ -15,15 +15,13 @@ io.on('connection', (socket) => {
 
   socket.emit('VIDEO:INIT', () => {
     if (videoInstance) {
-      videoInstance.getInitData()
+      videoInstance.getData()
     }
-
   });
-
 
   socket.on('VIDEO:SET', (data) => {
     if (videoInstance) {
-      videoInstance.setVideo(data);
+      videoInstance.cueNewVideo(data);
 
       io.to(roomId).emit('VIDEO:SET', data);
     }
