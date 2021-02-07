@@ -51,7 +51,15 @@ function __init(data) {
 function onStateChange(event) {
 }
 
-const socket = io();
+const socket = io({
+  query: {
+    roomId: getRoomId()
+  }
+});
+
+function getRoomId() {
+  return window.location.pathname.split('/')[2];
+}
 
 const $input = document.querySelector('.js-input');
 const $submit = document.querySelector('.js-button');
