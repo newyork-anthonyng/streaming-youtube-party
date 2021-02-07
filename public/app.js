@@ -16,6 +16,7 @@ function onYouTubeIframeAPIReady() {
     // videoId: 'M7lc1UVf-VE',
     events: {
       'onReady': onPlayerReady,
+      'onStateChange': onStateChange
     },
     playerVars: {
       mute: 1
@@ -45,6 +46,9 @@ function __init(data) {
   if (data.status === 'playing') {
     playVideo();
   }
+}
+
+function onStateChange(event) {
 }
 
 const socket = io();
@@ -91,6 +95,13 @@ function getVideoIdFromUrl(url) {
 
 socket.on('VIDEO:SET', (data) => {
   player.cueVideoById(data.videoId);
+
+  // get the time for video
+  // update scrubber
+  const currentTime = player.getCurrentTime();
+  const totalDuration = player.getDuration();
+
+  updateScrubber({ currentTime, totalDuration });
 
   updateFeed('set');
 });
@@ -147,6 +158,8 @@ function updateScrubber({ currentTime, totalDuration }) {
   if (!isScrubbing) {
     $scrubber.value =  currentTime;
     $scrubber.max = totalDuration; // TODO: do this once in INIT
+
+    $scrubberInfo.innerText = `${formatTime(currentTime)} / ${formatTime(totalDuration)} `;
   }
 }
 
