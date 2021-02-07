@@ -5,6 +5,5 @@ npm install
 npm run dev
 ```
 
-## Todo
-- [ ] Deploy!
-- [ ] Styling???
+## Deployed on:
+https://vast-tor-76562.herokuapp.com/room/SOME_ROOM_ID
