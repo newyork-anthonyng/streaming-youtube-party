@@ -13,11 +13,11 @@ io.on('connection', (socket) => {
   const videoInstance = videoInstances[roomId];
   socket.join(roomId);
 
-  socket.emit('VIDEO:INIT', () => {
+  socket.emit('VIDEO:INIT', (() => {
     if (videoInstance) {
-      videoInstance.getData()
+      return videoInstance.getData()
     }
-  });
+  })());
 
   socket.on('VIDEO:SET', (data) => {
     if (videoInstance) {

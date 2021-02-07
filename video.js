@@ -29,6 +29,7 @@ class Video {
 
     this.intervalId = setInterval(() => {
       this.currentTime = this.currentTime + 1;
+      console.log(this.getData());
     }, 1000);
   }
 
